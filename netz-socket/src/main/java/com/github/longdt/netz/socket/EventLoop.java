@@ -21,7 +21,7 @@ public class EventLoop implements Runnable, Closeable {
     private final ServerSocketChannel serverSocketChannel;
     private final Selector selector;
     private Pool<ByteBuffer> bufferPool;
-    private final BiConsumer<TcpConnection, ByteBuffer> readListener = SimpleHttpTransport::handleHttpRequest;
+    private final BiConsumer<TcpConnection, ByteBuffer> readListener = new SimpleHttpTransport();
 
     EventLoop(int port) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
@@ -82,7 +82,6 @@ public class EventLoop implements Runnable, Closeable {
             buf.compact();
         } catch (IOException ignored) {
             connection.close();
-            throw ignored;
         }
     }
 
@@ -99,7 +98,6 @@ public class EventLoop implements Runnable, Closeable {
             }
         } catch (IOException ignored) {
             connection.close();
-            throw ignored;
         }
     }
 
