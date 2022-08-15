@@ -13,14 +13,32 @@ public class SimpleHttpTransport implements BiConsumer<TcpConnection, ByteBuffer
 
     @Override
     public void accept(TcpConnection tcpConnection, ByteBuffer buffer) {
-        int offset = buffer.position() + 4;
+        var request = parseHttpRequest(buffer);
+        if (request != null) {
+            tcpConnection.write(response.flip());
+        }
+    }
+
+    private HttpRequest parseHttpRequest(ByteBuffer buffer) {
+        int offset = buffer.position() + 3;
+        var requestEnd = false;
         for (; offset < buffer.limit(); ++offset) {
-            if (buffer.get(offset - 4) == '\r' && buffer.get(offset - 3) == '\n' && buffer.get(offset - 2) == '\r' && buffer.get(offset - 1) == '\n'
-            ) {
+            if (buffer.get(offset - 3) == '\r' && buffer.get(offset - 2) == '\n'
+                    && buffer.get(offset - 1) == '\r' && buffer.get(offset) == '\n') {
+                requestEnd = true;
                 break;
             }
         }
-        buffer.position(offset);
-        tcpConnection.write(response.flip());
+        if (!requestEnd) {
+            return null;
+        }
+//        buffer.mark();
+        buffer.position(++offset);
+        return new HttpRequest(null, null, null, null, null, null);
+    }
+
+    private String readStringUntil(ByteBuffer buffer, byte stopAt) {
+//        buffer.asCharBuffer().
+        return null;
     }
 }
