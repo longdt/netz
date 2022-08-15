@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 
 public class SimpleHttpTransport implements BiConsumer<TcpConnection, ByteBuffer> {
     private static final byte[] body = "Hello World".getBytes(StandardCharsets.UTF_8);
-    private static final byte[] header = ("HTTP/1.1 200 OK\r\nContent-Length: " + body.length + "\r\n\r\n").getBytes(StandardCharsets.UTF_8);
+    private static final byte[] header = ("HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Length: " + body.length + "\r\n\r\n").getBytes(StandardCharsets.UTF_8);
     private final ByteBuffer response = ByteBuffer.allocateDirect(body.length + header.length).put(header).put(body);
 
     @Override
