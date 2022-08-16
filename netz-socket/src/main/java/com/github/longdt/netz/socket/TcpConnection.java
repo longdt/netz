@@ -35,13 +35,13 @@ public class TcpConnection implements Closeable {
     }
 
     public void write(byte[] data) {
-        var newWrite = !outBuffer.hasRemaining();
+        var newWrite = (outBuffer.position() == 0);
         outBuffer.put(data);
         interestWriteIf(newWrite);
     }
 
     public void write(ByteBuffer data) {
-        var newWrite = !outBuffer.hasRemaining();
+        var newWrite = (outBuffer.position() == 0);
         outBuffer.put(data);
         interestWriteIf(newWrite);
     }
