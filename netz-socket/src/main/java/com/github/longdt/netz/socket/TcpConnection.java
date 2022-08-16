@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class TcpConnection implements Closeable {
+    private static final int OP_READ_WRITE = SelectionKey.OP_READ | SelectionKey.OP_WRITE;
     private final SocketChannel socketChannel;
     private SelectionKey selectionKey;
     private final ByteBuffer inBuffer;
@@ -34,18 +35,21 @@ public class TcpConnection implements Closeable {
     }
 
     public void write(byte[] data) {
+        var newWrite = !outBuffer.hasRemaining();
         outBuffer.put(data);
-        interestWrite();
+        interestWriteIf(newWrite);
     }
 
     public void write(ByteBuffer data) {
+        var newWrite = !outBuffer.hasRemaining();
         outBuffer.put(data);
-        interestWrite();
+        interestWriteIf(newWrite);
     }
 
-    private void interestWrite() {
-        int oldVal = selectionKey.interestOps();
-        selectionKey.interestOps(oldVal | SelectionKey.OP_WRITE);
+    private void interestWriteIf(boolean flag) {
+        if (flag) {
+            selectionKey.interestOps(OP_READ_WRITE);
+        }
     }
 
     public ByteBuffer getInBuffer() {
