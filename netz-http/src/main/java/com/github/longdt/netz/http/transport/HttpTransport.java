@@ -17,9 +17,14 @@ public class HttpTransport implements Consumer<TcpConnection> {
     public void accept(TcpConnection tcpConnection) {
         var httpConn = (HttpConnection) tcpConnection;
         var httpRequest = (HttpRequestImpl) httpConn.getRequest();
-        if (httpConn.getRequestReader().read(httpConn.getInBuffer(), httpRequest)) {
+        var requestReader = httpConn.getRequestReader();
+        var offset = requestReader.read(httpConn.getInBuffer(), httpRequest);
+        if (offset > 0) {
+            System.out.println(httpRequest.getMethod() + " " + httpRequest.getUri() + " " + httpRequest.getVersion());
             tcpConnection.write(response.flip());
             httpRequest.reset();
+            requestReader.reset();
+            tcpConnection.getInBuffer().position(++offset);
         }
     }
 }

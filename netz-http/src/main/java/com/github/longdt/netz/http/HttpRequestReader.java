@@ -17,7 +17,7 @@ public class HttpRequestReader {
         this.tmpBuffer = tmpBuffer;
     }
 
-    public boolean read(ByteBuffer buffer, HttpRequestImpl httpRequest) {
+    public int read(ByteBuffer buffer, HttpRequestImpl httpRequest) {
         int end;
         if (httpRequest.getMethod() == null) {
             end = scan(buffer, SPACE, offset);
@@ -27,7 +27,7 @@ public class HttpRequestReader {
                 offset = start = ++end;
             } else {
                 offset = buffer.limit();
-                return false;
+                return -1;
             }
         }
         if (httpRequest.getUri() == null) {
@@ -38,7 +38,7 @@ public class HttpRequestReader {
                 offset = start = ++end;
             } else {
                 offset = buffer.limit();
-                return false;
+                return -1;
             }
         }
         if (httpRequest.getVersion() == null) {
@@ -50,14 +50,10 @@ public class HttpRequestReader {
                 offset = start = ++end;
             } else {
                 offset = buffer.limit();
-                return false;
+                return -1;
             }
         }
-        if (scanEmptyLine(buffer) > 0) {
-            reset();
-            return true;
-        }
-        return false;
+        return scanEmptyLine(buffer);
     }
 
     private int scan(ByteBuffer buffer, byte value, int from) {
@@ -88,7 +84,7 @@ public class HttpRequestReader {
         return new String(tmpBuffer, 0, length, charset);
     }
 
-    private void reset() {
+    public void reset() {
         offset = 0;
         start = 0;
     }
