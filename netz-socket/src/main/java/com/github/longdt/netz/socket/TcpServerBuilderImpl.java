@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 public class TcpServerBuilderImpl implements TcpServer.Builder {
     int port;
     Supplier<Consumer<TcpConnection>> requestHandlerFactory;
-    BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory = TcpConnection::new;
+    BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory = TcpConnection::new;
 
     @Override
     public TcpServer.Builder port(int port) {
@@ -36,13 +36,13 @@ public class TcpServerBuilderImpl implements TcpServer.Builder {
     }
 
     @Override
-    public TcpServer.Builder connectionFactory(BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory) {
+    public TcpServer.Builder connectionFactory(BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory) {
         this.connectionFactory = connectionFactory;
         return this;
     }
 
     @Override
-    public BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory() {
+    public BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory() {
         return connectionFactory;
     }
 

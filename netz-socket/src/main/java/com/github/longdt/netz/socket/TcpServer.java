@@ -1,10 +1,8 @@
 package com.github.longdt.netz.socket;
 
 import com.github.longdt.netz.socket.concurrent.IOThread;
-import com.github.longdt.netz.socket.pool.Pool;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -41,9 +39,9 @@ public class TcpServer {
 
         Supplier<Consumer<TcpConnection>> requestHandlerFactory();
 
-        Builder connectionFactory(BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory);
+        Builder connectionFactory(BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory);
 
-        BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory();
+        BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory();
 
         TcpServer build();
     }

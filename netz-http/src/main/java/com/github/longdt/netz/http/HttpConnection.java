@@ -1,20 +1,22 @@
 package com.github.longdt.netz.http;
 
 import com.github.longdt.netz.http.request.HttpRequest;
+import com.github.longdt.netz.http.request.HttpRequestImpl;
 import com.github.longdt.netz.http.response.HttpResponse;
+import com.github.longdt.netz.socket.LocalProvider;
 import com.github.longdt.netz.socket.TcpConnection;
-import com.github.longdt.netz.socket.pool.Pool;
 
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public class HttpConnection extends TcpConnection {
     private final HttpRequest request;
     private final HttpResponse response;
-    protected HttpConnection(SocketChannel socketChannel, Pool<ByteBuffer> bufferPool) {
-        super(socketChannel, bufferPool);
-        request = new HttpRequest();
+    private final HttpRequestReader requestReader;
+    protected HttpConnection(SocketChannel socketChannel, LocalProvider localProvider) {
+        super(socketChannel, localProvider);
+        request = new HttpRequestImpl();
         response = new HttpResponse();
+        requestReader = new HttpRequestReader(localProvider.getTmpBuffer());
     }
 
     public HttpRequest getRequest() {
@@ -23,5 +25,9 @@ public class HttpConnection extends TcpConnection {
 
     public HttpResponse getResponse() {
         return response;
+    }
+
+    public HttpRequestReader getRequestReader() {
+        return requestReader;
     }
 }
