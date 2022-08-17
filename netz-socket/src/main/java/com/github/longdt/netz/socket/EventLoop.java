@@ -2,7 +2,6 @@ package com.github.longdt.netz.socket;
 
 import com.github.longdt.netz.socket.concurrent.IOThread;
 import com.github.longdt.netz.socket.pool.Pool;
-import com.github.longdt.netz.socket.transport.SimpleHttpTransport;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -15,26 +14,36 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 public class EventLoop implements Runnable, Closeable {
     private final ServerSocketChannel serverSocketChannel;
     private final Selector selector;
+    private final TcpServerBuilderImpl builder;
     private Pool<ByteBuffer> bufferPool;
-    private final BiConsumer<TcpConnection, ByteBuffer> readListener = new SimpleHttpTransport();
+    private BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory;
+    private Consumer<TcpConnection> requestHandler;
 
-    EventLoop(int port) throws IOException {
+    EventLoop(TcpServerBuilderImpl builder) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
         serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true);
-        serverSocketChannel.bind(new InetSocketAddress(port));
+        serverSocketChannel.bind(new InetSocketAddress(builder.port));
         selector = Selector.open();
+        this.builder = builder;
+    }
+
+    private void init() {
+        var ioThread = (IOThread) Thread.currentThread();
+        bufferPool = ioThread.getBufferPool();
+        connectionFactory = builder.connectionFactory;
+        requestHandler = builder.requestHandlerFactory.get();
     }
 
     @Override
     public void run() {
-        var ioThread = (IOThread) Thread.currentThread();
-        bufferPool = ioThread.getBufferPool();
+        init();
         try {
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             while (true) {
@@ -76,9 +85,7 @@ public class EventLoop implements Runnable, Closeable {
                 return;
             }
             buf.flip();
-            if (readListener != null) {
-                readListener.accept(connection, buf);
-            }
+            requestHandler.accept(connection);
             buf.compact();
         } catch (IOException ignored) {
             connection.close();
@@ -105,7 +112,7 @@ public class EventLoop implements Runnable, Closeable {
         var serverChannel = (ServerSocketChannel) key.channel();
         var channel = serverChannel.accept();
         channel.configureBlocking(false);
-        var connection = new TcpConnection(channel, bufferPool);
+        var connection = connectionFactory.apply(channel, bufferPool);
         var connKey = channel.register(key.selector(), SelectionKey.OP_READ, connection);
         connection.setSelectionKey(connKey);
     }

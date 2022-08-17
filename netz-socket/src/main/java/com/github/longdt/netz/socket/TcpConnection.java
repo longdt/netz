@@ -19,7 +19,7 @@ public class TcpConnection implements Closeable {
     private final Pool<ByteBuffer> bufferPool;
     private boolean closed;
 
-    TcpConnection(SocketChannel socketChannel, Pool<ByteBuffer> bufferPool) {
+    protected TcpConnection(SocketChannel socketChannel, Pool<ByteBuffer> bufferPool) {
         this.socketChannel = socketChannel;
         inBuffer = bufferPool.get().clear();
         outBuffer = bufferPool.get().clear();
