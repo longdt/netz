@@ -1,5 +1,6 @@
-package com.github.longdt.netz.socket.transport;
+package com.github.longdt.netz.http.transport;
 
+import com.github.longdt.netz.http.request.HttpRequest;
 import com.github.longdt.netz.socket.TcpConnection;
 
 import java.nio.ByteBuffer;

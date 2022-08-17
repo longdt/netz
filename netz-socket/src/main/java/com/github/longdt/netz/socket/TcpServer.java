@@ -11,9 +11,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class TcpServer {
-    private final TcpServerBuilderImpl builder;
+    private final Builder builder;
 
-    TcpServer(TcpServerBuilderImpl builder) {
+    protected TcpServer(Builder builder) {
         this.builder = builder;
     }
 
@@ -34,8 +34,17 @@ public class TcpServer {
 
     public interface Builder {
         Builder port(int port);
+
+        int port();
+
         Builder requestHandlerFactory(Supplier<Consumer<TcpConnection>> requestHandlerFactory);
+
+        Supplier<Consumer<TcpConnection>> requestHandlerFactory();
+
         Builder connectionFactory(BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory);
+
+        BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory();
+
         TcpServer build();
     }
 }

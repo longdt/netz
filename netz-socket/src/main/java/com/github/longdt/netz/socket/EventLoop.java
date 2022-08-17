@@ -20,16 +20,16 @@ import java.util.function.Consumer;
 public class EventLoop implements Runnable, Closeable {
     private final ServerSocketChannel serverSocketChannel;
     private final Selector selector;
-    private final TcpServerBuilderImpl builder;
+    private final TcpServer.Builder builder;
     private Pool<ByteBuffer> bufferPool;
     private BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory;
     private Consumer<TcpConnection> requestHandler;
 
-    EventLoop(TcpServerBuilderImpl builder) throws IOException {
+    EventLoop(TcpServer.Builder builder) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
         serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true);
-        serverSocketChannel.bind(new InetSocketAddress(builder.port));
+        serverSocketChannel.bind(new InetSocketAddress(builder.port()));
         selector = Selector.open();
         this.builder = builder;
     }
@@ -37,8 +37,8 @@ public class EventLoop implements Runnable, Closeable {
     private void init() {
         var ioThread = (IOThread) Thread.currentThread();
         bufferPool = ioThread.getBufferPool();
-        connectionFactory = builder.connectionFactory;
-        requestHandler = builder.requestHandlerFactory.get();
+        connectionFactory = builder.connectionFactory();
+        requestHandler = builder.requestHandlerFactory().get();
     }
 
     @Override

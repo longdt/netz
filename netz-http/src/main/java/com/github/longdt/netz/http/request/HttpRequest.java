@@ -6,13 +6,17 @@ import java.net.http.HttpHeaders;
 import java.nio.ByteBuffer;
 
 public class HttpRequest {
-    private final String method;
-    private final String uri;
-    private final String version;
-    private final HttpHeaders headers;
-    private final ByteBuffer body;
+    private String method;
+    private String uri;
+    private String version;
+    private HttpHeaders headers;
+    private ByteBuffer body;
 
-    private final InetAddress remoteAddress;
+    private InetAddress remoteAddress;
+
+    public HttpRequest() {
+
+    }
 
     public HttpRequest(String method, String uri, String version, HttpHeaders headers, ByteBuffer body, InetAddress remoteAddress) {
         this.method = method;

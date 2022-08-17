@@ -20,15 +20,30 @@ public class TcpServerBuilderImpl implements TcpServer.Builder {
     }
 
     @Override
+    public int port() {
+        return port;
+    }
+
+    @Override
     public TcpServer.Builder requestHandlerFactory(Supplier<Consumer<TcpConnection>> requestHandlerFactory) {
         this.requestHandlerFactory = requestHandlerFactory;
         return this;
     }
 
     @Override
+    public Supplier<Consumer<TcpConnection>> requestHandlerFactory() {
+        return requestHandlerFactory;
+    }
+
+    @Override
     public TcpServer.Builder connectionFactory(BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory) {
         this.connectionFactory = connectionFactory;
         return this;
+    }
+
+    @Override
+    public BiFunction<SocketChannel, Pool<ByteBuffer>, ? extends TcpConnection> connectionFactory() {
+        return connectionFactory;
     }
 
     @Override
