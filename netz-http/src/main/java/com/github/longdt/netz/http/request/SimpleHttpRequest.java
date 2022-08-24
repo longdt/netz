@@ -4,18 +4,14 @@ package com.github.longdt.netz.http.request;
 import java.net.http.HttpHeaders;
 import java.nio.ByteBuffer;
 
-public class HttpRequestImpl implements HttpRequest {
+public class SimpleHttpRequest implements HttpRequest {
     private String method;
     private String uri;
     private String version;
     private HttpHeaders headers;
     private ByteBuffer body;
-    private State state;
 
-    public enum State {
-        READING_HEADERS,
-        READING_BODY,
-        UPGRADED
+    public SimpleHttpRequest() {
     }
 
     public void reset() {
@@ -24,36 +20,30 @@ public class HttpRequestImpl implements HttpRequest {
         version = null;
         headers = null;
         body = null;
-        state = State.READING_HEADERS;
     }
 
-    public HttpRequestImpl setMethod(String method) {
+    public SimpleHttpRequest setMethod(String method) {
         this.method = method;
         return this;
     }
 
-    public HttpRequestImpl setUri(String uri) {
+    public SimpleHttpRequest setUri(String uri) {
         this.uri = uri;
         return this;
     }
 
-    public HttpRequestImpl setVersion(String version) {
+    public SimpleHttpRequest setVersion(String version) {
         this.version = version;
         return this;
     }
 
-    public HttpRequestImpl setHeaders(HttpHeaders headers) {
+    public SimpleHttpRequest setHeaders(HttpHeaders headers) {
         this.headers = headers;
         return this;
     }
 
-    public HttpRequestImpl setBody(ByteBuffer body) {
+    public SimpleHttpRequest setBody(ByteBuffer body) {
         this.body = body;
-        return this;
-    }
-
-    public HttpRequestImpl setState(State state) {
-        this.state = state;
         return this;
     }
 
@@ -80,9 +70,5 @@ public class HttpRequestImpl implements HttpRequest {
     @Override
     public ByteBuffer getBody() {
         return body;
-    }
-
-    public State getState() {
-        return state;
     }
 }

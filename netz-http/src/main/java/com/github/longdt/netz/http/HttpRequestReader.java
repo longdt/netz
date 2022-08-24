@@ -1,6 +1,6 @@
 package com.github.longdt.netz.http;
 
-import com.github.longdt.netz.http.request.HttpRequestImpl;
+import com.github.longdt.netz.http.request.SimpleHttpRequest;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -17,7 +17,7 @@ public class HttpRequestReader {
         this.tmpBuffer = tmpBuffer;
     }
 
-    public int read(ByteBuffer buffer, HttpRequestImpl httpRequest) {
+    public int read(ByteBuffer buffer, SimpleHttpRequest httpRequest) {
         int end;
         if (httpRequest.getMethod() == null) {
             end = scan(buffer, SPACE, offset);
