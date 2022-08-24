@@ -10,7 +10,7 @@ public interface HttpRequest {
 
     String getVersion();
 
-    HttpHeaders getHeaders();
+    String getHeaders();
 
     ByteBuffer getBody();
 }

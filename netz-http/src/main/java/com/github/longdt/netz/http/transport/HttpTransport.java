@@ -1,7 +1,7 @@
 package com.github.longdt.netz.http.transport;
 
 import com.github.longdt.netz.http.HttpConnection;
-import com.github.longdt.netz.http.request.SimpleHttpRequest;
+import com.github.longdt.netz.http.request.DefaultHttpRequest;
 import com.github.longdt.netz.socket.TcpConnection;
 
 import java.nio.ByteBuffer;
@@ -16,15 +16,16 @@ public class HttpTransport implements Consumer<TcpConnection> {
     @Override
     public void accept(TcpConnection tcpConnection) {
         var httpConn = (HttpConnection) tcpConnection;
-        var httpRequest = (SimpleHttpRequest) httpConn.getRequest();
         var requestReader = httpConn.getRequestReader();
-        var offset = requestReader.read(httpConn.getInBuffer(), httpRequest);
+        var offset = requestReader.read();
         if (offset > 0) {
-            System.out.println(httpRequest.getMethod() + " " + httpRequest.getUri() + " " + httpRequest.getVersion());
+            var httpRequest = (DefaultHttpRequest) httpConn.getRequest();
+//            System.out.println(httpRequest.getMethod() + " " + httpRequest.getUri() + " " + httpRequest.getVersion());
+//            System.out.println(httpRequest.getHeaders());
             tcpConnection.write(response.flip());
             httpRequest.reset();
             requestReader.reset();
-            tcpConnection.getInBuffer().position(++offset);
+            tcpConnection.getInBuffer().position(offset);
         }
     }
 }

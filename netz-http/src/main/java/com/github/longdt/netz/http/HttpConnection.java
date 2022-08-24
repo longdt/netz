@@ -1,7 +1,7 @@
 package com.github.longdt.netz.http;
 
+import com.github.longdt.netz.http.request.DefaultHttpRequest;
 import com.github.longdt.netz.http.request.HttpRequest;
-import com.github.longdt.netz.http.request.SimpleHttpRequest;
 import com.github.longdt.netz.http.response.HttpResponse;
 import com.github.longdt.netz.socket.LocalProvider;
 import com.github.longdt.netz.socket.TcpConnection;
@@ -14,9 +14,9 @@ public class HttpConnection extends TcpConnection {
     private final HttpRequestReader requestReader;
     protected HttpConnection(SocketChannel socketChannel, LocalProvider localProvider) {
         super(socketChannel, localProvider);
-        request = new SimpleHttpRequest();
+        requestReader = new HttpRequestReaderImpl(getInBuffer(), localProvider.getTmpBuffer());
+        request = new DefaultHttpRequest(requestReader);
         response = new HttpResponse();
-        requestReader = new HttpRequestReader(localProvider.getTmpBuffer());
     }
 
     public HttpRequest getRequest() {
