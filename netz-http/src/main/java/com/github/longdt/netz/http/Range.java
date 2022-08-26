@@ -1,8 +1,8 @@
 package com.github.longdt.netz.http;
 
 public class Range {
-    private int start;
-    private int end; // exclusive
+    int start;
+    int end; // exclusive
 
     Range() {
         reset();

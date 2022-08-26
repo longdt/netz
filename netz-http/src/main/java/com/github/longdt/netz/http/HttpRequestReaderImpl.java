@@ -92,11 +92,11 @@ public class HttpRequestReaderImpl implements HttpRequestReader {
 
     @Override
     public void reset() {
-        method.reset();
-        uri.reset();
-        version.reset();
-        headers.reset();
-        body.reset();
+        method.end = 0;
+        uri.end = 0;
+        version.end = 0;
+        headers.end = 0;
+        body.end = 0;
         offset = 0;
     }
 

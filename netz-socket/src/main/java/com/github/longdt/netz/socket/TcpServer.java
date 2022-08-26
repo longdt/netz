@@ -16,7 +16,7 @@ public class TcpServer {
     }
 
     public void start() throws IOException {
-        for (int i = 0; i < Runtime.getRuntime().availableProcessors() * 2; ++i) {
+        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); ++i) {
             Thread t = new IOThread(new EventLoop(builder));
             t.start();
         }
