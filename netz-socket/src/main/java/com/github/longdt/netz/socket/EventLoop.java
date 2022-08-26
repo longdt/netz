@@ -1,13 +1,11 @@
 package com.github.longdt.netz.socket;
 
 import com.github.longdt.netz.socket.concurrent.IOThread;
-import com.github.longdt.netz.socket.pool.Pool;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
