@@ -23,6 +23,7 @@ public class HttpTransport implements Consumer<TcpConnection> {
 //            System.out.println(httpRequest.getMethod() + " " + httpRequest.getUri() + " " + httpRequest.getVersion());
 //            System.out.println(httpRequest.getHeaders());
             tcpConnection.write(response.flip());
+            tcpConnection.flush();
             httpRequest.reset();
             requestReader.reset();
             tcpConnection.getInBuffer().position(offset);
