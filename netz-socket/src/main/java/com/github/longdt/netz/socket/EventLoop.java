@@ -4,8 +4,7 @@ import com.github.longdt.netz.socket.concurrent.IOThread;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -16,61 +15,73 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class EventLoop implements Runnable, Closeable {
-    private final ServerSocketChannel serverSocketChannel;
-    private final Selector selector;
-    private final TcpServer.Builder builder;
-    private BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory;
-    private Consumer<TcpConnection> requestHandler;
-    private LocalProvider localProvider;
+    protected final Selector selector;
+    protected BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory;
+    protected Consumer<TcpConnection> requestHandler;
+    protected LocalProvider localProvider;
 
-    EventLoop(TcpServer.Builder builder) throws IOException {
-        serverSocketChannel = ServerSocketChannel.open();
-        serverSocketChannel.configureBlocking(false);
-        serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, true);
-        serverSocketChannel.bind(new InetSocketAddress(builder.port()));
-        selector = Selector.open();
-        this.builder = builder;
+    EventLoop() throws IOException {
+        this(null, null);
     }
 
-    private void init() {
+    EventLoop(BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory, Consumer<TcpConnection> requestHandler) throws IOException {
+        selector = Selector.open();
+        this.connectionFactory = connectionFactory;
+        this.requestHandler = requestHandler;
+    }
+
+    void init() {
         localProvider = (IOThread) Thread.currentThread();
-        connectionFactory = builder.connectionFactory();
-        requestHandler = builder.requestHandlerFactory().get();
     }
 
     @Override
     public void run() {
         init();
         try {
-            serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
             while (true) {
-                int readyChannels = selector.select();
-                if (readyChannels == 0)
-                    continue;
-                Set<SelectionKey> selectedKeys = selector.selectedKeys();
-                Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-                while (keyIterator.hasNext()) {
-                    SelectionKey key = keyIterator.next();
-                    keyIterator.remove();
-                    if (!key.isValid()) {
-                        continue;
-                    }
-                    if (key.isReadable()) {
-                        read(key);
-                    } else if (key.isWritable()) {
-                        write(key);
-                    } else if (key.isAcceptable()) {
-                        accept(key);
-                    }
-                }
+                handleEvents(selector.select());
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
         }
     }
 
-    private void read(SelectionKey key) throws IOException {
+    void handleEvents(int keyNum) {
+        Set<SelectionKey> selectedKeys = selector.selectedKeys();
+        Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
+        while (keyIterator.hasNext()) {
+            SelectionKey key = keyIterator.next();
+            keyIterator.remove();
+            if (key.isValid()) {
+                if (key.isWritable()) {
+                    write(key);
+                } else if (key.isReadable()) {
+                    read(key);
+                } else if (key.isAcceptable()) {
+                    accept(key);
+                }
+            }
+        }
+    }
+
+    void write(SelectionKey key) {
+        SocketChannel channel = (SocketChannel) key.channel();
+        var connection = (TcpConnection) key.attachment();
+        var data = connection.getOutBuffer();
+        data.flip();
+        try {
+            channel.write(data);
+//            data.compact();
+            compact(data);
+            if (data.position() == 0) {
+                key.interestOps(SelectionKey.OP_READ);
+            }
+        } catch (IOException ignored) {
+            connection.close();
+        }
+    }
+
+    void read(SelectionKey key) {
         var channel = (SocketChannel) key.channel();
         var connection = (TcpConnection) key.attachment();
         var buf = connection.getInBuffer();
@@ -83,40 +94,35 @@ public class EventLoop implements Runnable, Closeable {
             }
             buf.flip();
             requestHandler.accept(connection);
-            buf.compact();
+//            buf.compact();
+            compact(buf);
         } catch (IOException ignored) {
             connection.close();
         }
     }
 
-    private void write(SelectionKey key) throws IOException {
-        SocketChannel channel = (SocketChannel) key.channel();
-        var connection = (TcpConnection) key.attachment();
-        var data = connection.getOutBuffer();
-        data.flip();
-        try {
-            channel.write(data);
-            data.compact();
-            if (data.position() == 0) {
-                key.interestOps(SelectionKey.OP_READ);
-            }
-        } catch (IOException ignored) {
-            connection.close();
+    void compact(ByteBuffer buffer) {
+        if (buffer.position() == buffer.limit()) {
+            buffer.clear();
         }
+        buffer.compact();
     }
 
-    private void accept(SelectionKey key) throws IOException {
+    void accept(SelectionKey key) {
         var serverChannel = (ServerSocketChannel) key.channel();
-        var channel = serverChannel.accept();
-        channel.configureBlocking(false);
-        var connection = connectionFactory.apply(channel, localProvider);
-        var connKey = channel.register(key.selector(), SelectionKey.OP_READ, connection);
-        connection.setSelectionKey(connKey);
+        try {
+            var channel = serverChannel.accept();
+            channel.configureBlocking(false);
+            var connection = connectionFactory.apply(channel, localProvider);
+            var connKey = channel.register(key.selector(), SelectionKey.OP_READ, connection);
+            connection.init(connKey);
+        } catch (IOException e) {
+            throw new RuntimeException("Acceptor Error", e);
+        }
     }
 
     @Override
     public void close() throws IOException {
         selector.close();
-        serverSocketChannel.close();
     }
 }

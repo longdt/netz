@@ -7,8 +7,21 @@ import java.util.function.Supplier;
 
 public class TcpServerBuilderImpl implements TcpServer.Builder {
     int port;
+    boolean reusePort;
+    boolean blockingAccept;
     Supplier<Consumer<TcpConnection>> requestHandlerFactory;
     BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory = TcpConnection::new;
+
+    public TcpServerBuilderImpl() {
+    }
+
+    public TcpServerBuilderImpl(TcpServer.Builder other) {
+        this.port = other.port();
+        this.reusePort = other.reusePort();
+        this.blockingAccept = other.blockingAccept();
+        this.requestHandlerFactory = other.requestHandlerFactory();
+        this.connectionFactory = other.connectionFactory();
+    }
 
     @Override
     public TcpServer.Builder port(int port) {
@@ -19,6 +32,28 @@ public class TcpServerBuilderImpl implements TcpServer.Builder {
     @Override
     public int port() {
         return port;
+    }
+
+    @Override
+    public TcpServer.Builder reusePort(boolean reusePort) {
+        this.reusePort = reusePort;
+        return this;
+    }
+
+    @Override
+    public boolean reusePort() {
+        return reusePort;
+    }
+
+    @Override
+    public TcpServer.Builder blockingAccept(boolean blockingAccept) {
+        this.blockingAccept = blockingAccept;
+        return this;
+    }
+
+    @Override
+    public boolean blockingAccept() {
+        return blockingAccept;
     }
 
     @Override

@@ -26,6 +26,10 @@ public class TcpConnection implements Closeable {
         outBuffer = bufferPool.get().clear();
     }
 
+    public void init(SelectionKey selectionKey) {
+        this.selectionKey = selectionKey;
+    }
+
     public void write(String data) {
         write(data, StandardCharsets.UTF_8);
     }
@@ -69,9 +73,5 @@ public class TcpConnection implements Closeable {
             socketChannel.close();
         } catch (IOException ignored) {
         }
-    }
-
-    public void setSelectionKey(SelectionKey selectionKey) {
-        this.selectionKey = selectionKey;
     }
 }
