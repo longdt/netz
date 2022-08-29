@@ -68,7 +68,7 @@ public class EventLoop implements Runnable, Closeable {
         SocketChannel channel = (SocketChannel) key.channel();
         var connection = (TcpConnection) key.attachment();
         var data = connection.getOutBuffer();
-        data.flip();
+//        data.flip();
         try {
             channel.write(data);
 //            data.compact();
@@ -104,8 +104,9 @@ public class EventLoop implements Runnable, Closeable {
     void compact(ByteBuffer buffer) {
         if (buffer.position() == buffer.limit()) {
             buffer.clear();
+        } else {
+            buffer.compact();
         }
-        buffer.compact();
     }
 
     void accept(SelectionKey key) {

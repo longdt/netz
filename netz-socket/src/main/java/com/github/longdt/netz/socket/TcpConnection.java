@@ -47,7 +47,17 @@ public class TcpConnection implements Closeable {
     }
 
     public void flush() {
-        selectionKey.interestOps(OP_READ_WRITE);
+        try {
+            outBuffer.flip();
+            socketChannel.write(outBuffer);
+            if (outBuffer.hasRemaining()) {
+                selectionKey.interestOps(OP_READ_WRITE);
+            } else {
+                outBuffer.clear();
+            }
+        } catch (IOException e) {
+            close();
+        }
     }
 
     public ByteBuffer getInBuffer() {

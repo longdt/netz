@@ -16,5 +16,6 @@ public class SimpleHttpTransport implements Consumer<TcpConnection> {
         var input = tcpConnection.getInBuffer();
         input.position(input.limit());
         tcpConnection.write(response.flip());
+        tcpConnection.flush();
     }
 }
