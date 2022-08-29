@@ -4,27 +4,12 @@ public class Range {
     int start;
     int end; // exclusive
 
-    Range() {
-        reset();
-    }
-
-    Range(int start, int end) {
-        this.start = start;
-        this.end = end;
-    }
-
     int length() {
         return end - start;
     }
 
     boolean isEmpty() {
         return end == start;
-    }
-
-    public Range reset() {
-        start = 0;
-        end = 0;
-        return this;
     }
 
     public int getStart() {
