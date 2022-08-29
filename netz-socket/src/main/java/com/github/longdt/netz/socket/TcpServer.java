@@ -22,7 +22,7 @@ public class TcpServer {
         var eventloops = new EventLoop[Runtime.getRuntime().availableProcessors()];
         for (int i = 0; i < Runtime.getRuntime().availableProcessors(); ++i) {
             eventloops[i] = builder.reusePort() ? new ServerEventLoop(builder) : new WorkerEventLoop(builder);
-            Thread t = new IOThread(eventloops[i]);
+            Thread t = new IOThread(eventloops[i], "el-" + i);
             t.start();
         }
         if (!builder.reusePort()) {
@@ -44,7 +44,7 @@ public class TcpServer {
                         }
                     }
                 }
-            });
+            }, "el-acceptor");
             t.start();
         }
     }

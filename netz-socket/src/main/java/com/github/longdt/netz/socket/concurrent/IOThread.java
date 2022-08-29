@@ -11,8 +11,8 @@ public class IOThread extends Thread implements LocalProvider {
     private final StringBuilder stringBuilder = new StringBuilder(1024);
     private final byte[] tmpBuffer = new byte[2048];
 
-    public IOThread(Runnable target) {
-        super(target);
+    public IOThread(Runnable target, String name) {
+        super(target, name);
     }
 
     @Override
