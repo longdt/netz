@@ -19,7 +19,7 @@ public class TcpConnection implements Closeable {
     private final Pool<ByteBuffer> bufferPool;
     private boolean closed;
 
-    protected TcpConnection(SocketChannel socketChannel, LocalProvider localProvider) {
+    public TcpConnection(SocketChannel socketChannel, LocalProvider localProvider) {
         this.socketChannel = socketChannel;
         bufferPool = localProvider.getBufferPool();
         inBuffer = bufferPool.get().clear();
@@ -35,21 +35,15 @@ public class TcpConnection implements Closeable {
     }
 
     public void write(byte[] data) {
-        var newWrite = (outBuffer.position() == 0);
         outBuffer.put(data);
-        interestWriteIf(newWrite);
     }
 
     public void write(ByteBuffer data) {
-        var newWrite = (outBuffer.position() == 0);
         outBuffer.put(data);
-        interestWriteIf(newWrite);
     }
 
-    private void interestWriteIf(boolean flag) {
-        if (flag) {
-            selectionKey.interestOps(OP_READ_WRITE);
-        }
+    public void flush() {
+        selectionKey.interestOps(OP_READ_WRITE);
     }
 
     public ByteBuffer getInBuffer() {
@@ -65,13 +59,16 @@ public class TcpConnection implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (closed)
             return;
         closed = true;
-        socketChannel.close();
         bufferPool.release(inBuffer);
         bufferPool.release(outBuffer);
+        try {
+            socketChannel.close();
+        } catch (IOException ignored) {
+        }
     }
 
     public void setSelectionKey(SelectionKey selectionKey) {
