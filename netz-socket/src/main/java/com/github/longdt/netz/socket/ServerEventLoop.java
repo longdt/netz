@@ -12,7 +12,7 @@ public class ServerEventLoop extends EventLoop {
 
     ServerEventLoop(TcpServer.Builder builder) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
-        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.configureBlocking(builder.blockingAccept());
         serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEPORT, builder.reusePort());
         serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         serverSocketChannel.bind(new InetSocketAddress(builder.port()), 16 * 1024);
