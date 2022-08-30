@@ -4,6 +4,7 @@ import com.github.longdt.netz.socket.concurrent.IOThread;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -105,13 +106,21 @@ public class EventLoop implements Runnable, Closeable {
         var serverChannel = (ServerSocketChannel) key.channel();
         try {
             var channel = serverChannel.accept();
-            channel.configureBlocking(false);
+            configureChannel(channel);
             var connection = connectionFactory.apply(channel, localProvider);
             var connKey = channel.register(key.selector(), SelectionKey.OP_READ, connection);
             connection.init(connKey);
         } catch (IOException e) {
             throw new RuntimeException("Acceptor Error", e);
         }
+    }
+
+    void configureChannel(SocketChannel channel) throws IOException {
+        channel.configureBlocking(false);
+        channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+        channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
+        channel.setOption(StandardSocketOptions.SO_RCVBUF, 16384);
+        channel.setOption(StandardSocketOptions.SO_SNDBUF, 16384);
     }
 
     @Override

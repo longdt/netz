@@ -1,15 +1,15 @@
 package com.github.longdt.netz.socket;
 
+import org.jctools.queues.SpscArrayQueue;
+
 import java.io.IOException;
-import java.net.StandardSocketOptions;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class WorkerEventLoop extends EventLoop {
     private final TcpServer.Builder builder;
-    private final Queue<SocketChannel> connectedChannels = new ConcurrentLinkedQueue<>();
+    private final Queue<SocketChannel> connectedChannels = new SpscArrayQueue<>(16 * 1024);
 
     WorkerEventLoop(TcpServer.Builder builder) throws IOException {
         this.builder = builder;
@@ -34,14 +34,11 @@ public class WorkerEventLoop extends EventLoop {
         SocketChannel channel;
         while ((channel = connectedChannels.poll()) != null) {
             try {
-                channel.configureBlocking(false);
-//                channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-//                channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
-//                channel.setOption(StandardSocketOptions.SO_RCVBUF, 16384);
-//                channel.setOption(StandardSocketOptions.SO_SNDBUF, 16384);
+                configureChannel(channel);
                 var connection = connectionFactory.apply(channel, localProvider);
                 var connKey = channel.register(selector, SelectionKey.OP_READ, connection);
                 connection.init(connKey);
+                read(connKey); //try read early first
             } catch (IOException ignored) {
                 try {
                     channel.close();
