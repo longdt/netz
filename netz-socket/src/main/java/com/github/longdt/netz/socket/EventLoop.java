@@ -4,7 +4,6 @@ import com.github.longdt.netz.socket.concurrent.IOThread;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -67,13 +66,11 @@ public class EventLoop implements Runnable, Closeable {
     void write(SelectionKey key) {
         SocketChannel channel = (SocketChannel) key.channel();
         var connection = (TcpConnection) key.attachment();
-        var data = connection.getOutBuffer();
-//        data.flip();
+        var buffer = connection.getOutBuffer();
         try {
-            channel.write(data);
-//            data.compact();
-            compact(data);
-            if (data.position() == 0) {
+            channel.write(buffer);
+            if (!buffer.hasRemaining()) {
+                buffer.clear();
                 key.interestOps(SelectionKey.OP_READ);
             }
         } catch (IOException ignored) {
@@ -84,28 +81,23 @@ public class EventLoop implements Runnable, Closeable {
     void read(SelectionKey key) {
         var channel = (SocketChannel) key.channel();
         var connection = (TcpConnection) key.attachment();
-        var buf = connection.getInBuffer();
+        var buffer = connection.getInBuffer();
         try {
-            int numRead = channel.read(buf);
+            int numRead = channel.read(buffer);
             if (numRead == -1) {
                 connection.close();
                 key.cancel();
                 return;
             }
-            buf.flip();
+            buffer.flip();
             requestHandler.accept(connection);
-//            buf.compact();
-            compact(buf);
+            if (!buffer.hasRemaining()) {
+                buffer.clear();
+            } else if (buffer.position() != 0) {
+                buffer.compact();
+            }
         } catch (IOException ignored) {
             connection.close();
-        }
-    }
-
-    void compact(ByteBuffer buffer) {
-        if (buffer.position() == buffer.limit()) {
-            buffer.clear();
-        } else {
-            buffer.compact();
         }
     }
 
