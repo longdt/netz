@@ -9,13 +9,13 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class EventLoop implements Runnable, Closeable {
     protected final Selector selector;
+    protected final Set<SelectionKey> selectedKeys;
     protected BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory;
     protected Consumer<TcpConnection> requestHandler;
     protected LocalProvider localProvider;
@@ -26,6 +26,7 @@ public class EventLoop implements Runnable, Closeable {
 
     EventLoop(BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory, Consumer<TcpConnection> requestHandler) throws IOException {
         selector = Selector.open();
+        selectedKeys = selector.selectedKeys();
         this.connectionFactory = connectionFactory;
         this.requestHandler = requestHandler;
     }
@@ -47,11 +48,7 @@ public class EventLoop implements Runnable, Closeable {
     }
 
     void handleEvents(int keyNum) {
-        Set<SelectionKey> selectedKeys = selector.selectedKeys();
-        Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-        while (keyIterator.hasNext()) {
-            SelectionKey key = keyIterator.next();
-            keyIterator.remove();
+        for (var key : selectedKeys) {
             if (key.isValid()) {
                 if (key.isWritable()) {
                     write(key);
@@ -62,6 +59,7 @@ public class EventLoop implements Runnable, Closeable {
                 }
             }
         }
+        selectedKeys.clear();
     }
 
     void write(SelectionKey key) {

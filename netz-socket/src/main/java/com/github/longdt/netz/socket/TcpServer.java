@@ -31,11 +31,7 @@ public class TcpServer {
 
                 @Override
                 void handleEvents(int keyNum) {
-                    Set<SelectionKey> selectedKeys = selector.selectedKeys();
-                    Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-                    while (keyIterator.hasNext()) {
-                        SelectionKey key = keyIterator.next();
-                        keyIterator.remove();
+                    for (var i = 0; i < keyNum; ++i) {
                         try {
                             var channel = serverSocketChannel.accept();
                             ((WorkerEventLoop) eventloops[(counter++ % eventloops.length) & 0xFF]).accept(channel);
@@ -43,6 +39,7 @@ public class TcpServer {
                             throw new RuntimeException(e);
                         }
                     }
+                    selectedKeys.clear();
                 }
             }, "el-acceptor");
             t.start();
