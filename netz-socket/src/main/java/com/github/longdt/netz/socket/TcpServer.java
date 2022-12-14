@@ -20,7 +20,7 @@ public class TcpServer {
 
     public void start() throws IOException {
         var eventloops = new EventLoop[Runtime.getRuntime().availableProcessors()];
-        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); ++i) {
+        for (int i = 0; i < eventloops.length; ++i) {
             eventloops[i] = builder.reusePort() ? new ServerEventLoop(builder) : new WorkerEventLoop(builder);
             Thread t = new IOThread(eventloops[i], "el-" + i);
             t.start();
