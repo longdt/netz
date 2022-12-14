@@ -3,10 +3,7 @@ package com.github.longdt.netz.socket;
 import com.github.longdt.netz.socket.concurrent.IOThread;
 
 import java.io.IOException;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
