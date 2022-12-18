@@ -18,13 +18,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
+            <groupId>com.github.longdt</groupId>
+            <artifactId>netz-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jctools</groupId>
             <artifactId>jctools-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

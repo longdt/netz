@@ -9,6 +9,7 @@
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
     <modules>
+        <module>netz-common</module>
         <module>netz-socket</module>
         <module>netz-http</module>
     </modules>
@@ -22,6 +23,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.github.longdt</groupId>
+                <artifactId>netz-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.github.longdt</groupId>
                 <artifactId>netz-socket</artifactId>

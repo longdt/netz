@@ -4,16 +4,15 @@ import com.github.longdt.netz.socket.concurrent.IOThread;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.net.StandardSocketOptions;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-public class EventLoop implements Runnable, Closeable {
+public abstract class EventLoop implements Runnable, Closeable {
     protected final Selector selector;
     protected final Set<SelectionKey> selectedKeys;
     protected BiFunction<SocketChannel, LocalProvider, ? extends TcpConnection> connectionFactory;
@@ -56,6 +55,8 @@ public class EventLoop implements Runnable, Closeable {
                     read(key);
                 } else if (key.isAcceptable()) {
                     accept(key);
+                } else if (key.isConnectable()) {
+                    connect(key);
                 }
             }
         }
@@ -110,6 +111,44 @@ public class EventLoop implements Runnable, Closeable {
             connection.init(connKey);
         } catch (IOException e) {
             throw new RuntimeException("Acceptor Error", e);
+        }
+    }
+
+    void connect(SelectionKey key) {
+        var channel = (SocketChannel) key.channel();
+        try {
+            if (channel.finishConnect()) {
+                configureChannel(channel);
+                var connection = connectionFactory.apply(channel, localProvider);
+                var completionHandler = (CompletionHandler<TcpConnection, Void>) key.attach(connection);
+                completionHandler.completed(connection, null);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Connect Error ", e);
+        }
+    }
+
+    public CompletableFuture<TcpConnection> connect(SocketAddress remote) {
+        try {
+            var channel = SocketChannel.open();
+            channel.configureBlocking(false);
+            channel.connect(remote);
+            var future = new CompletableFuture<TcpConnection>();
+            channel.register(selector, SelectionKey.OP_CONNECT, new CompletionHandler<TcpConnection, Void>() {
+
+                @Override
+                public void completed(TcpConnection result, Void attachment) {
+                    future.complete(result);
+                }
+
+                @Override
+                public void failed(Throwable exc, Void attachment) {
+                    future.completeExceptionally(exc);
+                }
+            });
+            return future;
+        } catch (IOException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 
