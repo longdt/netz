@@ -9,6 +9,7 @@ import java.net.StandardSocketOptions;
 import java.nio.channels.*;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -128,7 +129,7 @@ public abstract class EventLoop implements Runnable, Closeable {
         }
     }
 
-    public CompletableFuture<TcpConnection> connect(SocketAddress remote) {
+    public CompletionStage<TcpConnection> connect(SocketAddress remote) {
         try {
             var channel = SocketChannel.open();
             channel.configureBlocking(false);
