@@ -34,6 +34,7 @@ public class WorkerEventLoop extends EventLoop {
         SocketChannel channel;
         while ((channel = connectedChannels.poll()) != null) {
             try {
+                channel.configureBlocking(false);
                 configureChannel(channel);
                 var connection = connectionFactory.apply(channel, localProvider);
                 var connKey = channel.register(selector, SelectionKey.OP_READ, connection);

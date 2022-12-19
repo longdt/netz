@@ -106,6 +106,7 @@ public abstract class EventLoop implements Runnable, Closeable {
         var serverChannel = (ServerSocketChannel) key.channel();
         try {
             var channel = serverChannel.accept();
+            channel.configureBlocking(false);
             configureChannel(channel);
             var connection = connectionFactory.apply(channel, localProvider);
             var connKey = channel.register(key.selector(), SelectionKey.OP_READ, connection);
@@ -154,7 +155,6 @@ public abstract class EventLoop implements Runnable, Closeable {
     }
 
     void configureChannel(SocketChannel channel) throws IOException {
-        channel.configureBlocking(false);
         channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         channel.setOption(StandardSocketOptions.TCP_NODELAY, true);
         channel.setOption(StandardSocketOptions.SO_RCVBUF, 16384);
