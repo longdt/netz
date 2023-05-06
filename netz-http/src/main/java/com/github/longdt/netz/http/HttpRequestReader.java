@@ -3,17 +3,17 @@ package com.github.longdt.netz.http;
 import java.nio.ByteBuffer;
 
 public interface HttpRequestReader {
-    int read();
+  int read();
 
-    void reset();
+  void reset();
 
-    String getMethod();
+  String getMethod();
 
-    String getUri();
+  String getUri();
 
-    String getVersion();
+  String getVersion();
 
-    String getHeaders();
+  String getHeaders();
 
-    ByteBuffer getBody();
+  ByteBuffer getBody();
 }

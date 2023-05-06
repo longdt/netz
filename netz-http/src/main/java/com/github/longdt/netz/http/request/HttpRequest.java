@@ -3,13 +3,13 @@ package com.github.longdt.netz.http.request;
 import java.nio.ByteBuffer;
 
 public interface HttpRequest {
-    String getMethod();
+  String getMethod();
 
-    String getUri();
+  String getUri();
 
-    String getVersion();
+  String getVersion();
 
-    String getHeaders();
+  String getHeaders();
 
-    ByteBuffer getBody();
+  ByteBuffer getBody();
 }

@@ -9,25 +9,26 @@ import com.github.longdt.netz.socket.TcpConnection;
 import java.nio.channels.SocketChannel;
 
 public class HttpConnection extends TcpConnection {
-    private final HttpRequest request;
-    private final HttpResponse response;
-    private final HttpRequestReader requestReader;
-    protected HttpConnection(SocketChannel socketChannel, LocalProvider localProvider) {
-        super(socketChannel, localProvider);
-        requestReader = new HttpRequestReaderImpl(getInBuffer(), localProvider.getTmpBuffer());
-        request = new DefaultHttpRequest(requestReader);
-        response = new HttpResponse();
-    }
+  private final HttpRequest request;
+  private final HttpResponse response;
+  private final HttpRequestReader requestReader;
 
-    public HttpRequest getRequest() {
-        return request;
-    }
+  protected HttpConnection(SocketChannel socketChannel, LocalProvider localProvider) {
+    super(socketChannel, localProvider);
+    requestReader = new HttpRequestReaderImpl(getInBuffer(), localProvider.getTmpBuffer());
+    request = new DefaultHttpRequest(requestReader);
+    response = new HttpResponse();
+  }
 
-    public HttpResponse getResponse() {
-        return response;
-    }
+  public HttpRequest getRequest() {
+    return request;
+  }
 
-    public HttpRequestReader getRequestReader() {
-        return requestReader;
-    }
+  public HttpResponse getResponse() {
+    return response;
+  }
+
+  public HttpRequestReader getRequestReader() {
+    return requestReader;
+  }
 }

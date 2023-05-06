@@ -5,9 +5,9 @@ import com.github.longdt.netz.socket.pool.Pool;
 import java.nio.ByteBuffer;
 
 public interface LocalProvider {
-    Pool<ByteBuffer> getBufferPool();
+  Pool<ByteBuffer> getBufferPool();
 
-    StringBuilder getStringBuilder();
+  StringBuilder getStringBuilder();
 
-    byte[] getTmpBuffer();
+  byte[] getTmpBuffer();
 }

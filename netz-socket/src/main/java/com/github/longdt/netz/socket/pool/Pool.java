@@ -4,9 +4,9 @@ package com.github.longdt.netz.socket.pool;
  * Created by naruto on 6/21/17.
  */
 public interface Pool<T> {
-    T get();
+  T get();
 
-    void release(T obj);
+  void release(T obj);
 
-    int size();
+  int size();
 }
