@@ -20,6 +20,11 @@ public class MethodCall {
   }
 
   @Benchmark
+  public Object genericStringConcatorWithoutDowncast() {
+    return genericStringConcator.apply(a, b);
+  }
+
+  @Benchmark
   public String genericStringConcator() {
     return genericStringConcator.apply(a, b);
   }
